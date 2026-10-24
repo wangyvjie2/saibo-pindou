@@ -1,0 +1,191 @@
+/* One set of motion tokens for every interactive control. */
+:root {
+  --ui-hover-scale: 1.025;
+  --ui-press-scale: .97;
+  --ui-hover-duration: 180ms;
+  --ui-press-duration: 35ms;
+  --ui-release-duration: 220ms;
+  --ui-hover-ease: cubic-bezier(.2,.75,.25,1);
+  --ui-press-ease: cubic-bezier(.2,.8,.3,1);
+  --ui-focus-color: #718968;
+}
+
+[data-ui-interactive] {
+  --ui-settle-scale: 1;
+  scale: 1;
+  transform-origin: center;
+  transition: scale var(--ui-hover-duration) var(--ui-hover-ease),
+    background-color var(--ui-hover-duration) ease,
+    border-color var(--ui-hover-duration) ease,
+    color var(--ui-hover-duration) ease,
+    box-shadow var(--ui-hover-duration) ease,
+    opacity var(--ui-hover-duration) ease !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Independent scale leaves placement coordinates and icon rotations intact. */
+[data-ui-interactive]:is(
+  .button,.scene-enter,.mini-work,.pattern-card,.tool,.assembly-option,
+  .album-choice,.accessory-finish,.accessory-card,.viewer-sway,.pm-command,
+  .pm-tool,.pm-active-color,.room-style-entry
+),
+.slot-list [data-ui-interactive],
+.fixed-pagination [data-ui-interactive],
+.work-card {
+  transform: none !important;
+}
+
+[data-ui-interactive].room-slot {
+  transform: translate(-50%,-50%) !important;
+}
+[data-ui-interactive].room-work-button {
+  transform: translate(-50%,-50%) !important;
+}
+[data-ui-interactive].assembled-work-button {
+  transform: translate(-50%,var(--anchor-offset,-50%)) !important;
+}
+[data-ui-interactive]:is(.oak-work-target,.oak-box-target) {
+  transform: translate(-50%,-50%) !important;
+}
+
+/* Hover is owned by the mouse listener, never by a sticky touch :hover. */
+@media (any-hover: hover) and (any-pointer: fine) {
+  [data-ui-interactive][data-ui-hover] {
+    --ui-settle-scale: var(--ui-hover-scale);
+    scale: var(--ui-hover-scale);
+  }
+}
+[data-ui-interactive][data-ui-pressed] {
+  scale: var(--ui-press-scale);
+  animation: none !important;
+  transition-duration: var(--ui-press-duration) !important;
+  transition-timing-function: var(--ui-press-ease) !important;
+}
+[data-ui-interactive][data-ui-release]:not([data-ui-pressed]) {
+  animation: ui-control-release var(--ui-release-duration)
+    var(--ui-hover-ease) both !important;
+}
+@keyframes ui-control-release {
+  0% { scale: var(--ui-press-scale); }
+  65% { scale: calc(var(--ui-settle-scale) + .012); }
+  100% { scale: var(--ui-settle-scale); }
+}
+
+/* Nested controls have one visual owner; the child keeps its native behavior. */
+[data-ui-interactive] [data-ui-interactive] {
+  scale: 1 !important;
+  animation: none !important;
+}
+
+/* JS also filters unavailable controls before sound and interaction feedback. */
+[data-ui-interactive]:is(
+  :disabled,[disabled],[data-ui-disabled],[aria-disabled="true"],[aria-busy="true"],
+  [data-loading="true"],[data-busy="true"],[data-state="loading"],
+  [data-state="pending"],.is-loading,.loading,.is-busy
+),
+:is([inert],[aria-disabled="true"],[aria-busy="true"],
+  [data-loading="true"],[data-busy="true"],[data-state="loading"],
+  [data-state="pending"],.is-loading,.loading,.is-busy)
+  [data-ui-interactive],
+[data-ui-interactive]:is(label):has(:disabled,[aria-disabled="true"],[aria-busy="true"]),
+fieldset:disabled [data-ui-interactive] {
+  --ui-settle-scale: 1;
+  scale: 1 !important;
+  animation: none !important;
+  transition-property: background-color,border-color,color,box-shadow,opacity !important;
+}
+
+[data-ui-interactive]:focus-visible,
+[data-ui-field]:focus-visible,
+[data-ui-interactive]:has(input:focus-visible,select:focus-visible) {
+  outline: 2px solid var(--ui-focus-color) !important;
+  outline-offset: 3px !important;
+}
+/* Small inset focus rings stay visible inside clipped card grids. */
+[data-ui-interactive]:is(
+  .palette-button,.accessory-card,.accessory-finish,.room-style-card,
+  .room-style-color,.pm-library-card,.pattern-card,.mini-work
+):focus-visible {
+  outline-offset: -3px !important;
+}
+@media (forced-colors: active) {
+  [data-ui-interactive]:focus-visible,
+  [data-ui-field]:focus-visible,
+  [data-ui-interactive]:has(input:focus-visible,select:focus-visible) {
+    outline-color: Highlight !important;
+  }
+}
+
+body.reduce-motion [data-ui-interactive],
+body.reduce-motion [data-ui-interactive]:is(
+  [data-ui-hover],[data-ui-pressed],[data-ui-release]
+) {
+  scale: 1 !important;
+  animation: none !important;
+  transition-duration: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-ui-interactive],
+  [data-ui-interactive]:is([data-ui-hover],[data-ui-pressed],[data-ui-release]) {
+    scale: 1 !important;
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+/* App-wide sound switch, available alongside navigation on every screen. */
+button.global-sound-toggle[data-global-sound] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #dfe6d6;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fbfcf6;
+  color: #718264;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+button.global-sound-toggle[data-global-sound] svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+button.global-sound-toggle[data-global-sound][aria-pressed="false"] {
+  color: #929b86;
+}
+.topbar-right { gap: 14px; }
+button.global-sound-toggle.dialog-sound-toggle[data-global-sound] {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  flex: none;
+}
+button.dialog-sound-toggle .global-sound-label { display: none; }
+#design-dialog :is(.dialog-heading,.viewer-header,.room-style-heading):has(>.dialog-sound-toggle) {
+  gap: 8px;
+  align-items: center;
+}
+#design-dialog :is(.dialog-heading,.viewer-header,.room-style-heading):has(>.dialog-sound-toggle)
+  > :is(h2,div) {
+  min-width: 0;
+  flex: 1;
+}
+#design-dialog :is(.dialog-heading,.viewer-header,.room-style-heading):has(>.dialog-sound-toggle) h2 {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media (max-width: 760px) {
+  .topbar-right { gap: 8px; min-width: 0; }
+  button.global-sound-toggle[data-global-sound] { padding: 8px; flex: none; }
+  button.global-sound-toggle[data-global-sound] .global-sound-label { display: none; }
+}
